@@ -18,7 +18,8 @@ Para el desarrollo de la página tenemos los siguientes objetivos
 Para poder emplear la conexión tuvimos que crear el bosquejo de la base de datos y por ello llegamos al siguiente diagrama entidad relación con lo cual se trabajará nuestro proyecto.
 
 
-![Diagrama entidad Relacion](PIXELPLAY_BACK/src/img/Diagrama%20se%20base%20de%20datos.png)
+![Diagrama entidad Relacion](src/img/BD.png)
+)
 ### Registro Funcional :baby:
 Se capturan los datos si se han escrito correctamente en los formatos solicitados dentro de nuestra base de datos.
 ### Login Funcional :walking_man:
