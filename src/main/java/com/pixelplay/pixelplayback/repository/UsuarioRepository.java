@@ -1,9 +1,12 @@
 package com.pixelplay.pixelplayback.repository;
 
-import com.pixelplay.pixelplayback.model.Usuario;
+import com.pixelplay.pixelplayback.entity.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
-public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
-    Optional<Usuario> findByNombreAndContrasena(String nombre, String contrasena);
+@Repository
+public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+    Optional<Usuario> findByCorreo(String correo);
+    Boolean existsByCorreo(String correo);
 }
