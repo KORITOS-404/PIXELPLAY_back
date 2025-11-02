@@ -17,10 +17,10 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
     // Buscar por género
     Page<Producto> findByGeneroAndActivoTrue(String genero, Pageable pageable);
     
-    // Buscar por nombre (búsqueda)
+    // ✅ CAMBIO: searchProductos → buscarProductos
     @Query("SELECT p FROM Producto p WHERE p.activo = true AND " +
            "(LOWER(p.nombre) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "LOWER(p.descripcion) LIKE LOWER(CONCAT('%', :keyword, '%')))")
-    Page<Producto> searchProductos(@Param("keyword") String keyword, Pageable pageable);
-    
+           "LOWER(p.descripcion) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(p.genero) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    Page<Producto> buscarProductos(@Param("keyword") String keyword, Pageable pageable);
 }

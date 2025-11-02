@@ -36,6 +36,10 @@ public class Usuario {
     @Column(length = 20)
     private String telefono;
     
+    // ✅ AGREGADO: Campo activo
+    @Column(nullable = false)
+    private Boolean activo = true;
+    
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "usuario_roles",
