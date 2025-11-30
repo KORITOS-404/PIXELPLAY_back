@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  # ====================================================
+  # 1. BACKEND SPRING BOOT (pixelplayback)
+  # ====================================================
+  pixelplayback:
+    # CLAVE: Usamos 'build' en lugar de 'image' para construir localmente.
+    # 'context: ../' sube un nivel (de 'monitoring' a 'PIXELPLAY_back').
+    build: 
+      context: ..
+      dockerfile: BackendDockerfile
+    
+    container_name: pixelplayback
+    # El backend escucha internamente en 8080. Lo exponemos en 8081 en el host.
+    ports: 
+      - "8081:8080" 
+    networks:
+      - monitoring
+
+  # ====================================================
+  # 2. PROMETHEUS (Recolector de Métricas)
+  # ====================================================
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring
+
+  # ====================================================
+  # 3. GRAFANA (Visualización de Métricas)
+  # ====================================================
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    restart: unless-stopped 
+    networks:
+      - monitoring
+
+  # ====================================================
+  # 4. NODE EXPORTER (Métricas del Sistema Operativo)
+  # ====================================================
+  node_exporter:
+    image: prom/node-exporter
+    container_name: node_exporter
+    ports:
+      - "9100:9100"
+    networks:
+      - monitoring
+      
+  # ====================================================
+  # 5. MYSQL DATABASE (Añadido y CORRECTAMENTE INDENTADO bajo services)
+  # CLAVE: El nombre del servicio 'mysql' es el hostname que usa Spring Boot.
+  # ====================================================
+  mysql: 
+    image: mysql:8.0
+    container_name: mysql_db
+    environment:
+      # Las credenciales coinciden con el application.properties
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: pixelplaydb
+      MYSQL_USER: root
+      MYSQL_PASSWORD: 123456
+    ports:
+      - "3307:3306" 
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+networks: # <-- Las redes se definen aquí, al final.
+  monitoring:
+    driver: bridge
