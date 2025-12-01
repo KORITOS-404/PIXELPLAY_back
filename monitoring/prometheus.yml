@@ -1,27 +1,20 @@
 global:
-  scrape_interval: 15s # Intervalo por defecto para recolectar métricas
-  evaluation_interval: 15s # Intervalo por defecto para evaluar reglas
-
+  # Intervalo con el que Prometheus rastrea por defecto.
+  scrape_interval: 15s 
 
 scrape_configs:
-  # 1. Job por defecto para Prometheus
+  # Configuramos Prometheus para que se monitoree a sí mismo.
   - job_name: 'prometheus'
     static_configs:
-      # CLAVE: Para que Prometheus se monitoree a sí mismo, se usa su propio nombre de host.
-      - targets: ['prometheus:9090'] 
+      - targets: ['localhost:9090']
 
-  # 2. Job para el Node Exporter (asumo que es un servicio en tu docker-compose)
-  - job_name: 'node_exporter'
-    static_configs:
-      # CLAVE: Usamos el nombre del servicio de Docker
-      - targets: ['node_exporter:9100']
-
-  # 3. 🎯 Job para tu Backend Spring Boot
+  # Configuramos el rastreo para tu aplicación Spring Boot.
   - job_name: 'pixelplayback-backend'
-    # La ruta exacta del endpoint de Actuator
-    metrics_path: '/actuator/prometheus' 
-    
+    # Esta configuración es CRÍTICA. Usa 'host.docker.internal' para
+    # que Docker pueda acceder a un servicio que está corriendo en tu máquina (el host).
+    # Spring Boot expone las métricas en /actuator/prometheus
+    metrics_path: '/actuator/prometheus'
     static_configs:
-      # CLAVE: USAMOS EL NOMBRE DEL SERVICIO DE DOCKER DE TU BACKEND
-      # (Asumo que el nombre del servicio es 'pixelplayback')
-      - targets: ['pixelplayback:8080']
+      - targets: ['host.docker.internal:8080']
+        labels:
+          application: 'pixelplayback'
