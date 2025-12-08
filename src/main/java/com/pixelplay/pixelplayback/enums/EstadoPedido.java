@@ -2,8 +2,10 @@ package com.pixelplay.pixelplayback.enums;
 
 public enum EstadoPedido {
     PENDIENTE,
-    PROCESANDO,
+    CONFIRMADO,
+    EN_PREPARACION,
     ENVIADO,
     ENTREGADO,
+    COMPLETADO,
     CANCELADO
 }

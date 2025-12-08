@@ -1,37 +1,37 @@
 package com.pixelplay.pixelplayback.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
+
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "detalle_pedido")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 public class DetallePedido {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_detalle_pedido")
-    private Long idDetallePedido;
+    @Column(name = "id_detalle_Pedido")
+    private Long idDetalle;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_pedido", nullable = false)
+    @JsonIgnoreProperties({"detalles", "hibernateLazyInitializer", "handler"})
     private Pedido pedido;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_producto", nullable = false)
-    private Producto producto; // ← Relación con la entidad Producto
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Producto producto;
     
-    // ✅ CAMBIAR el nombre del campo String
-    @Column(name = "nombre_producto", length = 100)
-    private String nombreProducto; // ← Nombre del producto como String
-    
-    @Column(nullable = false)
+    @Column(name = "cantidad", nullable = false)
     private Integer cantidad;
     
-    @Column(name = "precio_unitario", nullable = false, precision = 10, scale = 2)
+    @Column(name = "precio_unitario", precision = 10, scale = 2, nullable = false)
     private BigDecimal precioUnitario;
+    
+    @Column(name = "subtotal", precision = 10, scale = 2, nullable = false)
+    private BigDecimal subtotal;
 }

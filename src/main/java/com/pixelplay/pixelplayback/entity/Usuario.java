@@ -1,8 +1,11 @@
 package com.pixelplay.pixelplayback.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -36,7 +39,6 @@ public class Usuario {
     @Column(length = 20)
     private String telefono;
     
-    // ✅ AGREGADO: Campo activo
     @Column(nullable = false)
     private Boolean activo = true;
     
@@ -47,4 +49,9 @@ public class Usuario {
         inverseJoinColumns = @JoinColumn(name = "id_rol")
     )
     private Set<Role> roles = new HashSet<>();
+    
+    // ✅ AGREGADO: Relación con Pedidos
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"usuario", "hibernateLazyInitializer", "handler"})
+    private List<Pedido> pedidos = new ArrayList<>();
 }

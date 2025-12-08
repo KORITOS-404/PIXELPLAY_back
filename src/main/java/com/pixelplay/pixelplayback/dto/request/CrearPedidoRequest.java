@@ -1,21 +1,29 @@
 package com.pixelplay.pixelplayback.dto.request;
 
-import lombok.*;
-import java.math.BigDecimal;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import java.util.List;
 
+@Data
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class CrearPedidoRequest {
     
-    private String cliente;
+    private Long idUsuario;
+    private String nombre;
+    private String apellido;
     private String correo;
     private String telefono;
     private String direccion;
     private String metodoPago;
-    private List<ProductoPedidoDTO> productos;
-    private BigDecimal montoTotal;
-    private Long idUsuario;
+    private List<DetallePedidoRequest> detalles;
+    
+    @Data
+    @Getter
+    @Setter
+    public static class DetallePedidoRequest {
+        private Long idProducto;
+        private Integer cantidad;
+    }
 }

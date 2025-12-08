@@ -6,6 +6,9 @@ import com.pixelplay.pixelplayback.entity.Pedido;
 import com.pixelplay.pixelplayback.enums.EstadoPedido;
 import com.pixelplay.pixelplayback.service.PedidoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,10 +21,6 @@ public class PedidoController {
     @Autowired
     private PedidoService pedidoService;
 
-    /**
-     * CREAR NUEVO PEDIDO (desde Angular)
-     * POST http://localhost:8080/api/pedidos
-     */
     @PostMapping
     public ResponseEntity<?> crearPedido(@RequestBody CrearPedidoRequest request) {
         try {
@@ -33,14 +32,13 @@ public class PedidoController {
         }
     }
 
-    /**
-     * OBTENER TODOS LOS PEDIDOS
-     * GET http://localhost:8080/api/pedidos
-     */
     @GetMapping
-    public ResponseEntity<?> obtenerTodosPedidos() {
+    public ResponseEntity<?> obtenerTodosPedidos(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         try {
-            Iterable<Pedido> pedidos = pedidoService.listarTodosPedidos();
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Pedido> pedidos = pedidoService.listarPedidosPaginados(pageable);
             return ResponseEntity.ok(pedidos);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -48,10 +46,6 @@ public class PedidoController {
         }
     }
 
-    /**
-     * OBTENER PEDIDO POR ID
-     * GET http://localhost:8080/api/pedidos/1
-     */
     @GetMapping("/{id}")
     public ResponseEntity<?> obtenerPedidoPorId(@PathVariable Long id) {
         try {
@@ -63,10 +57,6 @@ public class PedidoController {
         }
     }
 
-    /**
-     * ACTUALIZAR ESTADO DEL PEDIDO
-     * PUT http://localhost:8080/api/pedidos/1/estado?estado=ENVIADO
-     */
     @PutMapping("/{id}/estado")
     public ResponseEntity<?> actualizarEstado(
             @PathVariable Long id, 
@@ -77,6 +67,21 @@ public class PedidoController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Error al actualizar estado: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/buscar")
+    public ResponseEntity<?> buscarPedidos(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        try {
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Pedido> pedidos = pedidoService.buscarPedidos(keyword, pageable);
+            return ResponseEntity.ok(pedidos);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al buscar pedidos: " + e.getMessage());
         }
     }
 }

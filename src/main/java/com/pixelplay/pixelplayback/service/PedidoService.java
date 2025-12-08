@@ -1,34 +1,32 @@
 package com.pixelplay.pixelplayback.service;
 
 import com.pixelplay.pixelplayback.dto.request.CrearPedidoRequest;
-import com.pixelplay.pixelplayback.dto.request.ProductoPedidoDTO;
 import com.pixelplay.pixelplayback.dto.response.PedidoResponseDTO;
 import com.pixelplay.pixelplayback.entity.DetallePedido;
 import com.pixelplay.pixelplayback.entity.Pedido;
 import com.pixelplay.pixelplayback.entity.Producto;
 import com.pixelplay.pixelplayback.entity.Usuario;
 import com.pixelplay.pixelplayback.enums.EstadoPedido;
-import com.pixelplay.pixelplayback.repository.DetallePedidoRepository;
 import com.pixelplay.pixelplayback.repository.PedidoRepository;
 import com.pixelplay.pixelplayback.repository.ProductoRepository;
 import com.pixelplay.pixelplayback.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Service
-@Transactional
 public class PedidoService {
 
     @Autowired
     private PedidoRepository pedidoRepository;
-
-    @Autowired
-    private DetallePedidoRepository detallePedidoRepository;
 
     @Autowired
     private ProductoRepository productoRepository;
@@ -36,129 +34,111 @@ public class PedidoService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    /**
-     * Crear un nuevo pedido desde Angular
-     */
+    @Transactional
     public PedidoResponseDTO crearPedido(CrearPedidoRequest request) {
-        try {
-            // 1. Crear el pedido principal
-            Pedido pedido = new Pedido();
-            
-            // Obtener usuario (si está logueado)
-            if (request.getIdUsuario() != null) {
-                Usuario usuario = usuarioRepository.findById(request.getIdUsuario())
-                        .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-                pedido.setUsuario(usuario);
-            } else {
-                // Si no está logueado, buscar o crear usuario "Invitado"
-                Usuario invitado = usuarioRepository.findByCorreo(request.getCorreo())
-                        .orElseGet(() -> {
-                            Usuario nuevoInvitado = new Usuario();
-                            nuevoInvitado.setCorreo(request.getCorreo());
-                            nuevoInvitado.setNombre("Invitado");
-                            nuevoInvitado.setApellido("Invitado");
-                            nuevoInvitado.setActivo(true);
-                            nuevoInvitado.setPassword("temp123");
-                            return usuarioRepository.save(nuevoInvitado);
-                        });
-                pedido.setUsuario(invitado);
-            }
-            
-            // Datos del pedido
-            pedido.setNumeroPedido(generarNumeroPedido());
-            pedido.setCliente(request.getCliente());
-            pedido.setCorreo(request.getCorreo());
-            pedido.setTelefono(request.getTelefono());
-            pedido.setDireccion(request.getDireccion());
-            pedido.setMetodoPago(request.getMetodoPago());
-            pedido.setMontoTotal(request.getMontoTotal());
-            pedido.setEstado(EstadoPedido.PENDIENTE);
-            pedido.setFechaPedido(LocalDateTime.now());
-            
-            // Guardar el pedido
-            Pedido pedidoGuardado = pedidoRepository.save(pedido);
-            
-            // 2. Crear los detalles del pedido (productos)
-            Set<DetallePedido> detalles = new HashSet<>();
-            
-            for (ProductoPedidoDTO productoDTO : request.getProductos()) {
-                // Buscar el producto en la BD
-                Producto producto = productoRepository.findById(productoDTO.getIdProducto())
-                        .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + productoDTO.getIdProducto()));
-                
-                // Verificar stock
-                if (producto.getStock() < productoDTO.getCantidad()) {
-                    throw new RuntimeException("Stock insuficiente para: " + producto.getNombre());
-                }
-                
-                // Crear detalle del pedido
-                DetallePedido detalle = new DetallePedido();
-                detalle.setPedido(pedidoGuardado);
-                detalle.setProducto(producto);
-                detalle.setNombreProducto(producto.getNombre());
-                detalle.setCantidad(productoDTO.getCantidad());
-                detalle.setPrecioUnitario(producto.getPrecio());
-                
-                // Actualizar stock del producto
-                producto.setStock(producto.getStock() - productoDTO.getCantidad());
-                productoRepository.save(producto);
-                
-                // Guardar detalle
-                detallePedidoRepository.save(detalle);
-                detalles.add(detalle);
-            }
-            
-            pedidoGuardado.setDetalles(detalles);
-            
-            // 3. Preparar respuesta
-            PedidoResponseDTO response = new PedidoResponseDTO();
-            response.setIdPedido(pedidoGuardado.getIdPedido());
-            response.setNumeroPedido(pedidoGuardado.getNumeroPedido());
-            response.setCliente(pedidoGuardado.getCliente());
-            response.setCorreo(pedidoGuardado.getCorreo());
-            response.setMontoTotal(pedidoGuardado.getMontoTotal());
-            response.setEstado(pedidoGuardado.getEstado());
-            response.setFechaPedido(pedidoGuardado.getFechaPedido());
-            response.setMensaje("Pedido creado exitosamente");
-            
-            return response;
-            
-        } catch (Exception e) {
-            throw new RuntimeException("Error al crear el pedido: " + e.getMessage());
+        Usuario usuario = null;
+        if (request.getIdUsuario() != null) {
+            usuario = usuarioRepository.findById(request.getIdUsuario())
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         }
+
+        Pedido pedido = new Pedido();
+        pedido.setNumeroPedido(generarNumeroPedido());
+        pedido.setUsuario(usuario);
+        pedido.setNombre(request.getNombre());
+        pedido.setApellido(request.getApellido());
+        pedido.setCorreo(request.getCorreo());
+        pedido.setTelefono(request.getTelefono());
+        pedido.setDireccion(request.getDireccion());
+        pedido.setMetadoPago(request.getMetodoPago());
+        pedido.setEstado(EstadoPedido.PENDIENTE);
+        pedido.setFechaPedido(LocalDateTime.now());
+
+        BigDecimal montoTotal = BigDecimal.ZERO;
+        List<DetallePedido> detalles = new ArrayList<>();
+
+        for (var item : request.getDetalles()) {
+            Producto producto = productoRepository.findById(item.getIdProducto())
+                    .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + item.getIdProducto()));
+
+            DetallePedido detalle = new DetallePedido();
+            detalle.setPedido(pedido);
+            detalle.setProducto(producto);
+            detalle.setCantidad(item.getCantidad());
+            detalle.setPrecioUnitario(producto.getPrecio());
+            
+            BigDecimal subtotal = producto.getPrecio().multiply(BigDecimal.valueOf(item.getCantidad()));
+            detalle.setSubtotal(subtotal);
+            
+            montoTotal = montoTotal.add(subtotal);
+            detalles.add(detalle);
+        }
+
+        pedido.setMontoTotal(montoTotal);
+        pedido.setDetalles(detalles);
+
+        Pedido pedidoGuardado = pedidoRepository.save(pedido);
+
+        PedidoResponseDTO response = new PedidoResponseDTO();
+        response.setIdPedido(pedidoGuardado.getIdPedido());
+        response.setNumeroPedido(pedidoGuardado.getNumeroPedido());
+        response.setMontoTotal(pedidoGuardado.getMontoTotal());
+        response.setEstado(pedidoGuardado.getEstado());
+        response.setMensaje("Pedido creado exitosamente");
+
+        return response;
     }
 
-    /**
-     * Generar número de pedido único
-     */
-    private String generarNumeroPedido() {
-        String prefix = "PED-";
-        long timestamp = System.currentTimeMillis();
-        int random = (int) (Math.random() * 1000);
-        return prefix + timestamp + "-" + random;
-    }
-
-    /**
-     * Obtener pedido por ID
-     */
-    public Pedido obtenerPedidoPorId(Long idPedido) {
-        return pedidoRepository.findById(idPedido)
-                .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
-    }
-
-    /**
-     * Listar todos los pedidos
-     */
     public Iterable<Pedido> listarTodosPedidos() {
         return pedidoRepository.findAll();
     }
 
-    /**
-     * Actualizar estado del pedido
-     */
-    public Pedido actualizarEstado(Long idPedido, EstadoPedido nuevoEstado) {
-        Pedido pedido = obtenerPedidoPorId(idPedido);
+    public Page<Pedido> listarPedidosPaginados(Pageable pageable) {
+        return pedidoRepository.findAll(pageable);
+    }
+
+    public Page<Pedido> buscarPedidos(String keyword, Pageable pageable) {
+        Page<Pedido> resultado = pedidoRepository.findByNumeroPedidoContainingIgnoreCase(keyword, pageable);
+        
+        if (resultado.isEmpty()) {
+            resultado = pedidoRepository.findByCorreoContainingIgnoreCase(keyword, pageable);
+        }
+        
+        if (resultado.isEmpty()) {
+            resultado = pedidoRepository.findByNombreContainingIgnoreCaseOrApellidoContainingIgnoreCase(
+                    keyword, keyword, pageable);
+        }
+        
+        return resultado;
+    }
+
+    public Pedido obtenerPedidoPorId(Long id) {
+        return pedidoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pedido no encontrado con ID: " + id));
+    }
+
+    @Transactional
+    public Pedido actualizarEstado(Long id, EstadoPedido nuevoEstado) {
+        Pedido pedido = obtenerPedidoPorId(id);
         pedido.setEstado(nuevoEstado);
         return pedidoRepository.save(pedido);
+    }
+
+    @Transactional
+    public void eliminarPedido(Long id) {
+        if (!pedidoRepository.existsById(id)) {
+            throw new RuntimeException("Pedido no encontrado con ID: " + id);
+        }
+        pedidoRepository.deleteById(id);
+    }
+
+    private String generarNumeroPedido() {
+        return "PED-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
+    public List<Pedido> obtenerPedidosPorUsuario(Long idUsuario) {
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        return usuario.getPedidos();
     }
 }

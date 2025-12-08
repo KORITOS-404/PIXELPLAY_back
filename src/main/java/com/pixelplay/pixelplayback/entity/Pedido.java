@@ -1,19 +1,18 @@
 package com.pixelplay.pixelplayback.entity;
 
 import com.pixelplay.pixelplayback.enums.EstadoPedido;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "pedidos")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 public class Pedido {
     
     @Id
@@ -21,38 +20,43 @@ public class Pedido {
     @Column(name = "id_pedido")
     private Long idPedido;
     
-    @ManyToOne
-    @JoinColumn(name = "id_usuario", nullable = false)
-    private Usuario usuario;
-    
-    @Column(name = "numero_pedido", unique = true, length = 50)
+    @Column(name = "numero_pedido", unique = true, nullable = false)
     private String numeroPedido;
     
-    @Column(name = "cliente", length = 100)
-    private String cliente;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_usuario")
+    @JsonIgnoreProperties({"pedidos", "password", "hibernateLazyInitializer", "handler"})
+    private Usuario usuario;
     
-    @Column(name = "correo", length = 100)
+    @Column(name = "nombre")
+    private String nombre;
+    
+    @Column(name = "apellido")
+    private String apellido;
+    
+    @Column(name = "correo")
     private String correo;
     
-    @Column(name = "telefono", length = 20)
+    @Column(name = "telefono")
     private String telefono;
     
-    @Column(name = "direccion", length = 255)
+    @Column(name = "direccion")
     private String direccion;
     
-    @Column(name = "fecha_pedido", nullable = false)
-    private LocalDateTime fechaPedido;
-    
-    @Column(name = "monto_total", nullable = false, precision = 10, scale = 2)
-    private BigDecimal montoTotal;
-    
-    @Column(name = "metodo_pago", length = 50)
-    private String metodoPago;
+    @Column(name = "metado_pago")
+    private String metadoPago;
     
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(name = "estado")
     private EstadoPedido estado;
     
-    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<DetallePedido> detalles = new HashSet<>();
+    @Column(name = "monto_total", precision = 10, scale = 2)
+    private BigDecimal montoTotal;
+    
+    @Column(name = "fecha_pedido")
+    private LocalDateTime fechaPedido;
+    
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"pedido", "hibernateLazyInitializer", "handler"})
+    private List<DetallePedido> detalles = new ArrayList<>();
 }
