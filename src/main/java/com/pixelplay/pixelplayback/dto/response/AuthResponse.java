@@ -1,18 +1,26 @@
 package com.pixelplay.pixelplayback.dto.response;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
-@Setter
-@NoArgsConstructor
+@Data
+@Builder
 @AllArgsConstructor
+@NoArgsConstructor
 public class AuthResponse {
     private String token;
+    @Builder.Default
     private String type = "Bearer";
     private String nombre;
     private String apellido;
     private String correo;
-    private String rol; // "ROLE_USER" o "ROLE_ADMIN"
+    private String rol;
+    private String telefono;
+    private String direccion;
+    private Long idUsuario;
+    private String mensaje;
     
     public AuthResponse(String token, String nombre, String apellido, String correo, String rol) {
         this.token = token;

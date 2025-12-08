@@ -4,7 +4,7 @@ import com.pixelplay.pixelplayback.enums.EstadoPedido;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,34 +25,34 @@ public class Pedido {
     @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
     
-    @ManyToOne
-    @JoinColumn(name = "id_metodo_pago")
-    private MetodoPago metodoPago;
+    @Column(name = "numero_pedido", unique = true, length = 50)
+    private String numeroPedido;
+    
+    @Column(name = "cliente", length = 100)
+    private String cliente;
+    
+    @Column(name = "correo", length = 100)
+    private String correo;
+    
+    @Column(name = "telefono", length = 20)
+    private String telefono;
+    
+    @Column(name = "direccion", length = 255)
+    private String direccion;
     
     @Column(name = "fecha_pedido", nullable = false)
-    private LocalDate fechaPedido;
-    
-    @Column(name = "fecha_entrega")
-    private LocalDate fechaEntrega;
+    private LocalDateTime fechaPedido;
     
     @Column(name = "monto_total", nullable = false, precision = 10, scale = 2)
     private BigDecimal montoTotal;
     
-    @Column(name = "documento_fiscal")
-    private Boolean documentoFiscal = false;
+    @Column(name = "metodo_pago", length = 50)
+    private String metodoPago;
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private EstadoPedido estado = EstadoPedido.PENDIENTE;
+    private EstadoPedido estado;
     
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<DetallePedido> detalles = new HashSet<>();
-    
-    @PrePersist
-    protected void onCreate() {
-        fechaPedido = LocalDate.now();
-        if (estado == null) {
-            estado = EstadoPedido.PENDIENTE;
-        }
-    }
 }

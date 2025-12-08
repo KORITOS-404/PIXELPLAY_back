@@ -44,6 +44,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/productos/**").permitAll()
                         .requestMatchers("/api/usuarios/**").permitAll()  // ✅ AGREGADO
                         .requestMatchers("/api/test/**").permitAll()
+                        .requestMatchers("/uploads/**").permitAll()  
+                        .requestMatchers("/images/**").permitAll()
+                        .requestMatchers("/api/pedidos/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
@@ -76,6 +79,7 @@ public class SecurityConfig {
     }
     
     @Bean
+    @SuppressWarnings("deprecation")
     public AuthenticationProvider authenticationProvider(PasswordEncoder passwordEncoder) {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setPasswordEncoder(passwordEncoder);

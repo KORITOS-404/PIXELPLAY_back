@@ -44,6 +44,7 @@ public class AuthService {
         usuario.setPassword(passwordEncoder.encode(request.getPassword()));
         usuario.setDireccion(request.getDireccion());
         usuario.setTelefono(request.getTelefono());
+        usuario.setActivo(true);
         
         // Asignar rol USER por defecto
         Role userRole = roleRepository.findByNombre("ROLE_USER")
@@ -58,19 +59,14 @@ public class AuthService {
         usuario.setRoles(roles);
         
         // Guardar usuario
-        usuarioRepository.save(usuario);
+        usuario = usuarioRepository.save(usuario);
         
         // Generar token JWT
         UserDetails userDetails = userDetailsService.loadUserByUsername(usuario.getCorreo());
         String token = jwtService.generateToken(userDetails);
         
-        return new AuthResponse(
-                token,
-                usuario.getNombre(),
-                usuario.getApellido(),
-                usuario.getCorreo(),
-                "ROLE_USER"
-        );
+        // Construir respuesta con TODOS los campos
+        return buildAuthResponse(usuario, token);
     }
     
     public AuthResponse login(LoginRequest request) {
@@ -90,16 +86,29 @@ public class AuthService {
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getCorreo());
         String token = jwtService.generateToken(userDetails);
         
-        // Obtener el primer rol (normalmente solo tiene uno)
-        String rol = usuario.getRoles().isEmpty() ? "ROLE_USER" : 
-                     usuario.getRoles().iterator().next().getNombre();
-        
-        return new AuthResponse(
-                token,
-                usuario.getNombre(),
-                usuario.getApellido(),
-                usuario.getCorreo(),
-                rol
-        );
+        // Construir respuesta con TODOS los campos
+        return buildAuthResponse(usuario, token);
     }
+    
+    /**
+     * Método auxiliar para construir AuthResponse con todos los datos del usuario
+     */
+private AuthResponse buildAuthResponse(Usuario usuario, String token) {
+    String rol = usuario.getRoles().isEmpty() ? "ROLE_USER" : 
+                 usuario.getRoles().iterator().next().getNombre();
+    
+    AuthResponse response = new AuthResponse();
+    response.setToken(token);
+    response.setIdUsuario(usuario.getIdUsuario());
+    response.setNombre(usuario.getNombre());
+    response.setApellido(usuario.getApellido());
+    response.setCorreo(usuario.getCorreo());
+    response.setTelefono(usuario.getTelefono());
+    response.setDireccion(usuario.getDireccion());
+    response.setRol(rol);
+    response.setMensaje("Autenticación exitosa");
+    
+    return response;
+}
+
 }

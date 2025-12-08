@@ -41,9 +41,10 @@ public class ProductoService {
         producto.setDescripcion(productoDTO.getDescripcion());
         producto.setGenero(productoDTO.getGenero());
         producto.setPrecio(productoDTO.getPrecio());
-        producto.setCodigoBarras(productoDTO.getCodigoBarras());
+        // ❌ ELIMINAR: producto.setCodigoBarras(productoDTO.getCodigoBarras());
         producto.setStock(productoDTO.getStock());
         producto.setImageUrl(productoDTO.getImageUrl());
+        producto.setPlataforma(productoDTO.getPlataforma()); // ✨ AGREGAR si tienes en DTO
         producto.setActivo(true);
         
         Producto guardado = productoRepository.save(producto);
@@ -58,9 +59,10 @@ public class ProductoService {
         producto.setDescripcion(productoDTO.getDescripcion());
         producto.setGenero(productoDTO.getGenero());
         producto.setPrecio(productoDTO.getPrecio());
-        producto.setCodigoBarras(productoDTO.getCodigoBarras());
+        // ❌ ELIMINAR: producto.setCodigoBarras(productoDTO.getCodigoBarras());
         producto.setStock(productoDTO.getStock());
         producto.setImageUrl(productoDTO.getImageUrl());
+        producto.setPlataforma(productoDTO.getPlataforma()); // ✨ AGREGAR si tienes en DTO
         
         Producto actualizado = productoRepository.save(producto);
         return convertirADTO(actualizado);
@@ -80,9 +82,10 @@ public class ProductoService {
         dto.setDescripcion(producto.getDescripcion());
         dto.setGenero(producto.getGenero());
         dto.setPrecio(producto.getPrecio());
-        dto.setCodigoBarras(producto.getCodigoBarras());
+        // ❌ ELIMINAR: dto.setCodigoBarras(producto.getCodigoBarras());
         dto.setStock(producto.getStock());
         dto.setImageUrl(producto.getImageUrl());
+        dto.setPlataforma(producto.getPlataforma()); // ✨ AGREGAR si tienes en DTO
         dto.setActivo(producto.getActivo());
         return dto;
     }

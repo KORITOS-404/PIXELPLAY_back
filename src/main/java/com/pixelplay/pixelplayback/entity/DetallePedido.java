@@ -23,16 +23,15 @@ public class DetallePedido {
     
     @ManyToOne
     @JoinColumn(name = "id_producto", nullable = false)
-    private Producto producto;
+    private Producto producto; // ← Relación con la entidad Producto
+    
+    // ✅ CAMBIAR el nombre del campo String
+    @Column(name = "nombre_producto", length = 100)
+    private String nombreProducto; // ← Nombre del producto como String
     
     @Column(nullable = false)
     private Integer cantidad;
     
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal precio; // Precio al momento de la compra
-    
-    // Método auxiliar para calcular subtotal
-    public BigDecimal getSubtotal() {
-        return precio.multiply(BigDecimal.valueOf(cantidad));
-    }
+    @Column(name = "precio_unitario", nullable = false, precision = 10, scale = 2)
+    private BigDecimal precioUnitario;
 }

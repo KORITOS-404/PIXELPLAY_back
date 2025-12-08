@@ -24,18 +24,18 @@ public class Producto {
     private String descripcion;
     
     @Column(length = 20)
-    private String genero; // Ej: "Videojuegos", "Consolas", "Accesorios"
+    private String genero;
+    
+    @Column(length = 50)
+    private String plataforma;
     
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal precio;
     
-    @Column(name = "codigo_barras", unique = true, length = 30)
-    private String codigoBarras;
-    
     @Column(nullable = false)
     private Integer stock = 0;
     
-    @Column(name = "image_url")
+    @Column(name = "image_url", length = 500)
     private String imageUrl;
     
     @Column(nullable = false)
